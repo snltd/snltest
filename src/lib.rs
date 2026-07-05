@@ -1,17 +1,22 @@
-use camino::{Utf8Path, Utf8PathBuf};
-use std::{fs, sync::LazyLock};
-
-static FIXTURES: LazyLock<Utf8PathBuf> = LazyLock::new(|| {
-    Utf8PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+pub fn fixture_impl(manifest_dir: &str, path: impl AsRef<camino::Utf8Path>) -> camino::Utf8PathBuf {
+    camino::Utf8PathBuf::from(manifest_dir)
         .join("tests")
         .join("resources")
-});
-
-pub fn fixture(path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
-    FIXTURES.join(path)
+        .join(path)
 }
 
-pub fn load_fixture(path: impl AsRef<Utf8Path>) -> String {
-    let path = fixture(path);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read fixture '{}': {e}", path))
+#[macro_export]
+macro_rules! fixture {
+    ($path:expr) => {
+        $crate::fixture_impl(env!("CARGO_MANIFEST_DIR"), $path)
+    };
+}
+
+#[macro_export]
+macro_rules! load_fixture {
+    ($path:expr) => {
+        let path = $crate::fixture!(path);
+        std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("failed to read fixture '{}': {e}", path))
+    };
 }
