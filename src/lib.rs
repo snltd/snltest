@@ -1,6 +1,10 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use std::fs;
 
+pub fn files_in_dir(dir: &Utf8Path) -> usize {
+    dir.read_dir().unwrap().collect::<Vec<_>>().len()
+}
+
 pub fn fixture_impl(manifest_dir: &str, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
     Utf8PathBuf::from(manifest_dir)
         .join("tests")
