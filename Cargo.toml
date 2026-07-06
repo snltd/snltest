@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 camino = "1.2.4"
+camino-tempfile-ext = "0.3.3"

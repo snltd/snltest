@@ -1,6 +1,30 @@
 use camino::{Utf8Path, Utf8PathBuf};
+use camino_tempfile_ext::prelude::*;
 use std::fs;
 
+pub trait ContainsFiles {
+    fn contains_files(&self, count: usize) -> bool;
+}
+
+impl ContainsFiles for Utf8Path {
+    fn contains_files(&self, count: usize) -> bool {
+        match self.is_dir() {
+            true => {
+                let files_in_dir = self.read_dir().expect("cannot read dir").count();
+                files_in_dir == count
+            }
+            false => false,
+        }
+    }
+}
+
+impl ContainsFiles for Utf8TempDir {
+    fn contains_files(&self, count: usize) -> bool {
+        self.path().contains_files(count)
+    }
+}
+
+/// Returns the number of entries in dir
 pub fn files_in_dir(dir: &Utf8Path) -> usize {
     dir.read_dir().unwrap().collect::<Vec<_>>().len()
 }
