@@ -24,6 +24,19 @@ impl ContainsFiles for Utf8TempDir {
     }
 }
 
+pub fn fixture_dir(dir_name: &str, files: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
+    let temp = Utf8TempDir::new().expect("failed to create temp dir");
+    let dir = temp.child(dir_name);
+    dir.create_dir_all().expect("failed to create subdirectory");
+
+    for file in files {
+        let file_path = dir.child(file);
+        file_path.write_str(file).expect("failed to create file");
+    }
+
+    (temp, dir.canonicalize_utf8().unwrap())
+}
+
 /// Returns the number of entries in dir
 pub fn files_in_dir(dir: &Utf8Path) -> usize {
     dir.read_dir().unwrap().collect::<Vec<_>>().len()
