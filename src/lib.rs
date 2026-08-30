@@ -67,3 +67,14 @@ macro_rules! load_fixture {
         $crate::load_fixture_impl(env!("CARGO_MANIFEST_DIR"), $path)
     };
 }
+
+/// Return a handle to a test dir containing files with the given names
+pub fn tmpdir_with_files(fnames: Vec<&str>) -> Utf8TempDir {
+    let src_dir = Utf8TempDir::new().unwrap();
+    for fname in fnames {
+        let f = src_dir.child(fname);
+        f.write_str(fname).unwrap();
+    }
+
+    src_dir
+}
