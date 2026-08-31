@@ -68,13 +68,18 @@ macro_rules! load_fixture {
     };
 }
 
-/// Return a handle to a test dir containing files with the given names
-pub fn tmpdir_with_files(fnames: Vec<&str>) -> Utf8TempDir {
+/// Return a handle to a test dir containing files with the given names,
+/// along with its canonical path. (MacOS puts /tmp behind a /private symlink,
+/// so tests that compare paths need both.)
+pub fn tmpdir_with_files(fnames: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
     let src_dir = Utf8TempDir::new().unwrap();
     for fname in fnames {
         let f = src_dir.child(fname);
         f.write_str(fname).unwrap();
     }
 
-    src_dir
+    let canonical = Utf8PathBuf::from_path_buf(src_dir.path().canonicalize().unwrap())
+        .expect("canonicalized path should still be UTF-8");
+
+    (src_dir, canonical)
 }
