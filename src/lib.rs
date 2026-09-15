@@ -89,8 +89,12 @@ pub fn cwd() -> Utf8PathBuf {
 }
 
 pub fn repo_root() -> Utf8PathBuf {
-    Utf8PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cannot get CARGO_MANIFEST_DIR"))
-        .parent()
-        .expect("cannot get repo_root")
-        .into()
+    let manifest_dir =
+        Utf8PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cannot get CARGO_MANIFEST_DIR"));
+
+    manifest_dir
+        .ancestors()
+        .find(|dir| dir.join("Cargo.lock").exists())
+        .expect("cannot find repo_root")
+        .to_path_buf()
 }
