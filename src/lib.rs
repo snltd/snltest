@@ -1,6 +1,6 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use camino_tempfile_ext::prelude::*;
-use std::fs;
+use std::{env, fs};
 
 pub trait ContainsFiles {
     fn contains_files(&self, count: usize) -> bool;
@@ -82,4 +82,15 @@ pub fn tmpdir_with_files(fnames: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
         .expect("canonicalized path should still be UTF-8");
 
     (src_dir, canonical)
+}
+
+pub fn cwd() -> Utf8PathBuf {
+    Utf8PathBuf::from_path_buf(env::current_dir().unwrap()).unwrap()
+}
+
+pub fn repo_root() -> Utf8PathBuf {
+    Utf8PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cannot get CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("cannot get repo_root")
+        .into()
 }
