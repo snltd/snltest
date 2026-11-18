@@ -1,5 +1,7 @@
 use camino::{Utf8Path, Utf8PathBuf};
 use camino_tempfile_ext::prelude::*;
+use flate2::read::GzDecoder;
+use std::io::Read;
 use std::{env, fs};
 
 pub trait ContainsFiles {
@@ -49,11 +51,6 @@ pub fn fixture_impl(manifest_dir: &str, path: impl AsRef<Utf8Path>) -> Utf8PathB
         .join(path)
 }
 
-pub fn load_fixture_impl(manifest_dir: &str, path: impl AsRef<Utf8Path>) -> String {
-    let path = fixture_impl(manifest_dir, path);
-    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read fixture '{}': {e}", path))
-}
-
 #[macro_export]
 macro_rules! fixture {
     ($path:expr) => {
@@ -61,10 +58,34 @@ macro_rules! fixture {
     };
 }
 
+pub fn load_fixture_impl(manifest_dir: &str, path: impl AsRef<Utf8Path>) -> String {
+    let path = fixture_impl(manifest_dir, path);
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read fixture '{}': {e}", path))
+}
+
 #[macro_export]
 macro_rules! load_fixture {
     ($path:expr) => {
         $crate::load_fixture_impl(env!("CARGO_MANIFEST_DIR"), $path)
+    };
+}
+
+pub fn load_fixture_gz_impl(manifest_dir: &str, path: impl AsRef<Utf8Path>) -> String {
+    let path = fixture_impl(manifest_dir, path);
+    let file =
+        fs::File::open(&path).unwrap_or_else(|e| panic!("failed to open fixture '{}': {e}", path));
+
+    let mut contents = String::new();
+    GzDecoder::new(file)
+        .read_to_string(&mut contents)
+        .unwrap_or_else(|e| panic!("failed to decompress fixture '{}': {e}", path));
+    contents
+}
+
+#[macro_export]
+macro_rules! load_fixture_gz {
+    ($path:expr) => {
+        $crate::load_fixture_gz_impl(env!("CARGO_MANIFEST_DIR"), $path)
     };
 }
 
