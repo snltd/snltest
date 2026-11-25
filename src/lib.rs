@@ -46,17 +46,19 @@ impl ContainsFiles for Utf8TempDir {
 /// keeps the directory alive whilst it is in scope. You will likely wish to disregard the first
 /// element of the tuple. The file_name() of the returned directory is `dir_name`.
 ///
-/// The directory will have under it all files given in `files`. The content of each file is its
-/// relative path, as a String.
+/// The directory will have under it all files given in `files`. If a file ends with `/`, a
+/// directory is made. Otherwise you get a plain file, the content of which is its relative path,
+/// as a String.
 ///
 /// # Examples
 ///
 /// ```
 /// use snltest::fixture_dir;
-/// let (x, path) = fixture_dir("my-test", vec!["file-a", "dir-a/file-b", "dir-a/file-c"]);
+/// let (x, path) = fixture_dir("my-test", vec!["file-a", "dir-b/file-b", "dir-c/"]);
 /// assert!(path.exists());
 /// assert!(path.join("file-a").exists());
-/// assert_eq!("dir-a/file-b".to_string(), std::fs::read_to_string(path.join("dir-a").join("file-b")).unwrap());
+/// assert!(path.join("dir-c").is_dir());
+/// assert_eq!("dir-b/file-b".to_string(), std::fs::read_to_string(path.join("dir-b").join("file-b")).unwrap());
 /// ```
 pub fn fixture_dir(dir_name: &str, files: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
     let temp = Utf8TempDir::new().expect("failed to create temp dir");
@@ -65,7 +67,13 @@ pub fn fixture_dir(dir_name: &str, files: Vec<&str>) -> (Utf8TempDir, Utf8PathBu
 
     for file in files {
         let file_path = dir.child(file);
-        file_path.write_str(file).expect("failed to create file");
+        if file.ends_with("/") {
+            file_path
+                .create_dir_all()
+                .expect("failed to make directory");
+        } else {
+            file_path.write_str(file).expect("failed to create file");
+        }
     }
 
     (temp, dir.canonicalize_utf8().unwrap())
