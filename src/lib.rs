@@ -103,7 +103,7 @@ pub fn fixture_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> Utf8PathBuf
 
 /// Returns a Utf8PathBuf relative to the calling crate's `tests/resources` directory.
 ///
-/// The path is built from the *caller's* `CARGO_crate_root`, so this works from any crate
+/// The path is built from the *caller's* `CARGO_MANIFEST_DIR`, so this works from any crate
 /// which depends on this one.
 ///
 /// # Examples
@@ -114,7 +114,7 @@ pub fn fixture_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> Utf8PathBuf
 #[macro_export]
 macro_rules! fixture {
     ($path:expr) => {
-        $crate::fixture_impl(env!("CARGO_crate_root"), $path)
+        $crate::fixture_impl(env!("CARGO_MANIFEST_DIR"), $path)
     };
 }
 
@@ -125,7 +125,7 @@ pub fn load_fixture_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> String
 }
 
 /// Returns the contents of the given fixture file, as a String. Fixtures are assumed to be in
-/// the calling crate's `{CARGO_crate_root}/test/resources` directory.
+/// the calling crate's `{CARGO_MANIFEST_DIR}/test/resources` directory.
 ///
 /// # Examples
 ///
@@ -136,7 +136,7 @@ pub fn load_fixture_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> String
 #[macro_export]
 macro_rules! load_fixture {
     ($path:expr) => {
-        $crate::load_fixture_impl(env!("CARGO_crate_root"), $path)
+        $crate::load_fixture_impl(env!("CARGO_MANIFEST_DIR"), $path)
     };
 }
 
@@ -154,7 +154,7 @@ pub fn load_fixture_gz_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> Str
 }
 
 /// Returns the contents of the given gzip-compressed fixture file, as a String. Fixtures are
-/// assumed to be in the calling crate's `{CARGO_crate_root}/test/resources` directory.
+/// assumed to be in the calling crate's `{CARGO_MANIFEST_DIR}/test/resources` directory.
 ///
 /// # Examples
 ///
@@ -165,7 +165,7 @@ pub fn load_fixture_gz_impl(crate_root: &str, path: impl AsRef<Utf8Path>) -> Str
 #[macro_export]
 macro_rules! load_fixture_gz {
     ($path:expr) => {
-        $crate::load_fixture_gz_impl(env!("CARGO_crate_root"), $path)
+        $crate::load_fixture_gz_impl(env!("CARGO_MANIFEST_DIR"), $path)
     };
 }
 
@@ -177,7 +177,7 @@ pub fn cwd() -> Utf8PathBuf {
 /// Returns the root of the repo in which code is running, based on the location of Cargo.lock.
 pub fn repo_root() -> Utf8PathBuf {
     let crate_root =
-        Utf8PathBuf::from(env::var("CARGO_crate_root").expect("cannot get CARGO_crate_root"));
+        Utf8PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("cannot get CARGO_MANIFEST_DIR"));
 
     crate_root
         .ancestors()
