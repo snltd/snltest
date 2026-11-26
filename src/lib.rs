@@ -44,7 +44,7 @@ impl ContainsFiles for Utf8TempDir {
 
 /// Returns a path to a temp directory, paired in a tuple with a Utf8TempDir object which
 /// keeps the directory alive whilst it is in scope. You will likely wish to disregard the first
-/// element of the tuple. The file_name() of the returned directory is `dir_name`.
+/// element of the tuple.
 ///
 /// The directory will have under it all files given in `files`. If a file ends with `/`, a
 /// directory is made. Otherwise you get a plain file, the content of which is its relative path,
@@ -54,19 +54,19 @@ impl ContainsFiles for Utf8TempDir {
 ///
 /// ```
 /// use snltest::fixture_dir;
-/// let (x, path) = fixture_dir("my-test", vec!["file-a", "dir-b/file-b", "dir-c/"]);
+/// let (_tempdir, path) = fixture_dir(vec!["file-a", "dir-b/file-b", "dir-c/"]);
 /// assert!(path.exists());
 /// assert!(path.join("file-a").exists());
 /// assert!(path.join("dir-c").is_dir());
 /// assert_eq!("dir-b/file-b".to_string(), std::fs::read_to_string(path.join("dir-b").join("file-b")).unwrap());
 /// ```
-pub fn fixture_dir(dir_name: &str, files: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
-    let temp = Utf8TempDir::new().expect("failed to create temp dir");
-    let dir = temp.child(dir_name);
-    dir.create_dir_all().expect("failed to create subdirectory");
+pub fn fixture_dir(files: Vec<&str>) -> (Utf8TempDir, Utf8PathBuf) {
+    let temp_dir = Utf8TempDir::new().expect("failed to create temp dir");
+    let temp_path = temp_dir.path().canonicalize_utf8().unwrap();
 
     for file in files {
-        let file_path = dir.child(file);
+        let file_path = temp_dir.child(file);
+
         if file.ends_with("/") {
             file_path
                 .create_dir_all()
@@ -76,7 +76,7 @@ pub fn fixture_dir(dir_name: &str, files: Vec<&str>) -> (Utf8TempDir, Utf8PathBu
         }
     }
 
-    (temp, dir.canonicalize_utf8().unwrap())
+    (temp_dir, temp_path)
 }
 
 /// Returns the number of entries at the top level of dir.
